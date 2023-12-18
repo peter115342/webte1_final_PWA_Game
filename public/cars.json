@@ -1,0 +1,22 @@
+{
+    "cars": [
+      {
+        "name" : "Sports Car",
+        "url" : "/images/car_sport.png",
+        "lives" : 1,
+        "speed" : 3
+      },
+      {
+        "name" : "Muscle Car",
+        "url" : "/images/car_muscle.png",
+        "lives" : 2,
+        "speed" : 2
+      },
+      {
+        "name" : "Pickup Truck",
+        "url" : "/images/car_truck.png",
+        "lives" : 3,
+        "speed" : 1
+      }
+    ]
+  }
