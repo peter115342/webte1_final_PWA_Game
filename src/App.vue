@@ -21,7 +21,13 @@ body {
   position: relative;
   width: 600px;
   height: 596px;
-  margin-top: 325px;
+  margin-top: 50px;
+}
+
+
+@media (max-width: 1024px) {
+  
+
 }
 </style>
 

@@ -57,19 +57,20 @@
     methods: {
       closeModalAndNotify() {
         this.$emit('close', this.selectedVehicle);
-// In the component that updates the selected vehicle (modal component)
-eventBus.emit('vehicle-selected', this.selectedVehicle);
-      },
-      getSelectedVehicleDetails() {
-        const selectedVehicle = this.vehicles.find(
-          (vehicle) => vehicle.value === this.selectedVehicle
-        );
-        return selectedVehicle
-          ? `${selectedVehicle.name} - Lives: ${selectedVehicle.lives}, Speed: ${selectedVehicle.speed}`
-          : '';
-      },
+      eventBus.emit('closeModal');
+      eventBus.emit('vehicle-selected', this.selectedVehicle);
     },
-  };        
+      getSelectedVehicleDetails() {
+  const selectedVehicle = this.vehicles.find(
+    (vehicle) => vehicle.value === this.selectedVehicle
+  );
+  return selectedVehicle
+    ? `${selectedVehicle.name} - Lives: ${selectedVehicle.lives}, Speed: ${Math.round(selectedVehicle.speed)}`
+    : '';
+},
+
+    },
+  };
 
 
   </script>

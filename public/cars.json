@@ -4,7 +4,7 @@
         "name" : "Sports Car",
         "url" : "/images/car_sport.png",
         "lives" : 1,
-        "speed" : 3
+        "speed" : 2.5
       },
       {
         "name" : "Muscle Car",
@@ -16,7 +16,7 @@
         "name" : "Pickup Truck",
         "url" : "/images/car_truck.png",
         "lives" : 3,
-        "speed" : 1
+        "speed" : 1.49
       }
     ]
   }
