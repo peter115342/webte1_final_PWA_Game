@@ -13,20 +13,21 @@ import Modal from './components/Modal.vue';
 <style scoped>
 body {
   margin: 0;
+  margin-top: 0;
   text-align: center;
+  overflow: hidden;
 }
 
 .main-container {
-  margin: 0 auto;
   position: relative;
-  width: 600px;
-  height: 596px;
-  margin-top: 50px;
+  width: 100vw;
+  height: 95vh;
+  max-width: 600px;
+  margin: 0 auto;
+  overflow: hidden;
 }
 
-
 @media (max-width: 1024px) {
-  
 
 }
 </style>
@@ -36,7 +37,7 @@ export default {
   data() {
     return {
       isModalVisible: false,
-    };  
+    };
   },
   mounted() {
     this.isModalVisible = true;

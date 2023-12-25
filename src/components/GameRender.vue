@@ -11,8 +11,9 @@
       :style="{ left: `${obstacle.x}px`, top: `${obstacle.y}px`, width: `${obstacle.width}px`, zIndex: obstacle.zIndex }"
       :src="obstacle.image"
       alt="Obstacle"
-      @collision="handleCollision"
     />
+
+    <div class="lives-container"> Lives : {{ selectedVehicleLives }}</div>
   </div>
 </template>
 
@@ -24,7 +25,7 @@ export default {
   data() {
     return {
       imagePosition: { x: 0, y: 0 },
-      moveStep: 3, // Initial moveStep
+      moveStep: 3,
       imageWidth: 55,
       selectedVehicleImage: '/images/car_sport.png',
       vehicles: [],
@@ -34,7 +35,7 @@ export default {
       obstacles: [],
       visibleObstacles: [],
       modalClosed: false,
-      obstacleInterval: null, // Declare obstacleInterval here
+      obstacleInterval: null,
     };
   },
   methods: {
@@ -66,7 +67,6 @@ export default {
         this.selectedVehicleLives = selectedVehicle.lives;
         this.selectedVehicleSpeed = selectedVehicle.speed;
 
-        // Update moveStep based on the selected vehicle's speed
         this.moveStep = 3 * this.selectedVehicleSpeed;
       } else {
         console.warn('Vehicle not found:', vehicle);
@@ -76,32 +76,57 @@ export default {
       const renderWindowHeight = this.$refs.renderWindow.clientHeight;
       return obstacle.y > renderWindowHeight - 75;
     },
-    checkCollision(obstacle) {
+
+    checkCollision() {
       const carLeft = this.imagePosition.x;
-      const carRight = this.imagePosition.x + this.imageWidth;
+      const carRight = carLeft + this.imageWidth;
       const carTop = this.imagePosition.y;
-      const carBottom = this.imagePosition.y + this.imageWidth;
+      const carBottom = carTop + this.imageWidth;
+
+      const obstacle = this.visibleObstacles[0];
+
+      if (!obstacle || obstacle.collided) {
+        return false;
+      }
 
       const obstacleLeft = obstacle.x;
-      const obstacleRight = obstacle.x + obstacle.width;
+      const obstacleRight = obstacleLeft + 55;
       const obstacleTop = obstacle.y;
-      const obstacleBottom = obstacle.y + obstacle.height;
+      const obstacleBottom = obstacleTop + 55;
 
-      return (
-        carLeft < obstacleRight &&
-        carRight > obstacleLeft &&
-        carTop < obstacleBottom &&
-        carBottom > obstacleTop
-      );
+      const horizontalOverlap = carLeft < obstacleRight && carRight > obstacleLeft;
+      const verticalOverlap = carTop < obstacleBottom && carBottom > obstacleTop;
+
+      if (horizontalOverlap && verticalOverlap) {
+        console.log('Collision Detected:');
+        this.handleCollision();
+
+        obstacle.collided = true;
+
+        this.visibleObstacles = this.visibleObstacles.filter((o) => o !== obstacle);
+
+        return true;
+      }
+
+      return false;
     },
+
     handleCollision() {
       console.log('Collision with obstacle!');
-      console.log('Car crashed!');
-      window.location.reload();
+
+      if (this.selectedVehicleLives > 0) {
+        this.selectedVehicleLives -= 1;
+
+        if (this.selectedVehicleLives === 0) {
+          console.log('Game Over!');
+        } else {
+          console.log(`Lives remaining: ${this.selectedVehicleLives}`);
+        }
+      }
     },
+
     addObstacle() {
-      // Check if the modal is closed
-      if (this.modalClosed) {
+      if (this.modalClosed && this.selectedVehicleLives > 0) {
         console.log('Adding obstacle...');
 
         const images = [
@@ -117,7 +142,7 @@ export default {
           width: 55,
           speed: this.selectedVehicleSpeed,
           image: images[Math.floor(Math.random() * images.length)],
-          zIndex: 0, // Initial zIndex
+          zIndex: 0,
         };
 
         this.obstacles.push(newObstacle);
@@ -126,28 +151,29 @@ export default {
     },
     closeModal() {
       this.modalClosed = true;
-      // Start obstacle movement when the modal is closed
       this.startObstacleMovement();
     },
     startObstacleMovement() {
-      // Clear existing interval if any
       clearInterval(this.obstacleInterval);
-      // Start the interval for obstacle movement
       this.obstacleInterval = setInterval(() => {
-        this.visibleObstacles.forEach((obstacle) => {
-          obstacle.y += obstacle.speed;
-          obstacle.zIndex = 0; // Update zIndex based on y-position
-          if (this.checkCollision(obstacle)) {
-            eventBus.emit('collision');
+        if (this.selectedVehicleLives > 0) {
+          this.visibleObstacles.forEach((obstacle) => {
+            obstacle.y += obstacle.speed;
+            obstacle.zIndex = 0;
+            if (this.checkCollision(obstacle)) {
+              eventBus.emit('collision');
+            }
+          });
+
+          this.visibleObstacles = this.visibleObstacles.filter(
+            (obstacle) => !this.isObstacleOutsideRenderArea(obstacle)
+          );
+
+          if (this.visibleObstacles.length === 0) {
+            this.addObstacle();
           }
-        });
-
-        this.visibleObstacles = this.visibleObstacles.filter(
-          (obstacle) => !this.isObstacleOutsideRenderArea(obstacle)
-        );
-
-        if (this.visibleObstacles.length === 0) {
-          this.addObstacle();
+        } else {
+          clearInterval(this.obstacleInterval);
         }
       }, 16);
     },
@@ -165,11 +191,10 @@ export default {
         }));
       });
 
-    // Initialize obstacles
-    this.addObstacle(); // Add the first obstacle
+    this.addObstacle();
 
     this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
-    this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.25;
+    this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
 
     eventBus.on('vehicle-selected', this.updateSelectedVehicle);
     eventBus.on('closeModal', this.closeModal);
@@ -196,5 +221,13 @@ export default {
 
 img {
   position: absolute;
+}
+.lives-container {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-size: 28px;
+  color: rgb(210, 26, 5);
+  font-weight: bolder;
 }
 </style>
