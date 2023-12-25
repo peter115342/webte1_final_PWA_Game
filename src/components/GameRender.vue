@@ -179,7 +179,13 @@ export default {
     },
   },
   mounted() {
-    fetch('/cars.json')
+    const isProduction = process.env.NODE_ENV === 'production';
+const baseURL = isProduction
+  ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' // Adjust for your dev environment
+  : '/';
+const jsonPath = `${baseURL}cars.json`;
+
+    fetch(jsonPath)
       .then((response) => response.json())
       .then((data) => {
         this.vehicles = data.cars.map((car) => ({

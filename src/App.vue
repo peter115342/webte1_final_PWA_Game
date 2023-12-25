@@ -27,8 +27,10 @@ body {
   overflow: hidden;
 }
 
-@media (max-width: 1024px) {
-
+@media (max-width: 600px) {
+  .main-container {
+    height: 100vh;
+  }
 }
 </style>
 
