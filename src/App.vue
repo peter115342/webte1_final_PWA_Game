@@ -29,7 +29,7 @@ body {
 
 @media (max-width: 600px) {
   .main-container {
-    height: 100vh;
+    height: 90vh;
   }
 }
 </style>

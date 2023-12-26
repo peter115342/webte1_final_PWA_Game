@@ -30,6 +30,12 @@
 
 <script>
 import { eventBus } from './utils/eventBus.js';
+
+// Import images for each car
+import sportsCarImage from '@/assets/car_sport.png';
+import muscleCarImage from '@/assets/car_muscle.png';
+import truckImage from '@/assets/car_truck.png';
+
 export default {
   props: {
     visible: Boolean,
@@ -52,7 +58,7 @@ export default {
       .then((data) => {
         this.vehicles = data.cars.map((car) => ({
           value: car.name.toLowerCase().replace(/\s/g, '_'),
-          image:  car.url,
+          image: this.getCarImage(car.name),
           name: car.name,
           lives: car.lives,
           speed: car.speed,
@@ -60,24 +66,33 @@ export default {
       });
   },
   methods: {
+    getCarImage(carName) {
+      switch (carName) {
+        case 'Sports Car':
+          return sportsCarImage;
+        case 'Muscle Car':
+          return muscleCarImage;
+        case 'Pickup Truck':
+          return truckImage;
+        default:
+          return ''; // Provide a default image or handle accordingly
+      }
+    },
     closeModalAndNotify() {
       this.$emit('close', this.selectedVehicle);
-    eventBus.emit('closeModal');
-    eventBus.emit('vehicle-selected', this.selectedVehicle);
-  },
+      eventBus.emit('closeModal');
+      eventBus.emit('vehicle-selected', this.selectedVehicle);
+    },
     getSelectedVehicleDetails() {
-const selectedVehicle = this.vehicles.find(
-  (vehicle) => vehicle.value === this.selectedVehicle
-);
-return selectedVehicle
-  ? `${selectedVehicle.name} - Lives: ${selectedVehicle.lives}, Speed: ${Math.round(selectedVehicle.speed)}`
-  : '';
-},
-
+      const selectedVehicle = this.vehicles.find(
+        (vehicle) => vehicle.value === this.selectedVehicle
+      );
+      return selectedVehicle
+        ? `${selectedVehicle.name} - Lives: ${selectedVehicle.lives}, Speed: ${Math.round(selectedVehicle.speed)}`
+        : '';
+    },
   },
 };
-
-
 </script>
 
 <style scoped>
@@ -150,5 +165,4 @@ input[type="radio"] {
 #vehicle-details{
   text-align: center;
 }
-
 </style>

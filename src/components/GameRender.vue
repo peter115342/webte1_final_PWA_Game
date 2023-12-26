@@ -18,6 +18,12 @@
 </template>
 
 <script>
+import carSportImage from '@/assets/car_sport.png';
+import carMuscleImage from '@/assets/car_muscle.png';
+import carTruckImage from '@/assets/car_truck.png';
+import obstacleVanImage from '@/assets/obstacle_van.png';
+import obstacleTaxiImage from '@/assets/obstacle_taxi.png';
+import obstacleAmbulanceImage from '@/assets/obstacle_ambulance.png';
 import { ref, onMounted, onBeforeUnmount, createApp } from 'vue';
 import { eventBus } from './utils/eventBus.js';
 
@@ -27,7 +33,7 @@ export default {
       imagePosition: { x: 0, y: 0 },
       moveStep: 3,
       imageWidth: 55,
-      selectedVehicleImage: '/images/car_sport.png',
+      selectedVehicleImage: carSportImage,
       vehicles: [],
       selectedVehicle: 'sports_car',
       selectedVehicleSpeed: 3,
@@ -130,9 +136,9 @@ export default {
         console.log('Adding obstacle...');
 
         const images = [
-          '/images/obstacle_van.png',
-          '/images/obstacle_taxi.png',
-          '/images/obstacle_ambulance.png',
+        obstacleVanImage,
+          obstacleTaxiImage,
+          obstacleAmbulanceImage,
         ];
 
         const newObstacle = {
@@ -153,6 +159,19 @@ export default {
       this.modalClosed = true;
       this.startObstacleMovement();
     },
+    getCarImage(carName) {
+    switch (carName.toLowerCase()) {
+      case 'sports car':
+        return carSportImage;
+      case 'muscle car':
+        return carMuscleImage;
+      case 'pickup truck':
+        return carTruckImage;
+      default:
+        console.warn('Car image not found for:', carName);
+        return carSportImage;
+    }
+  },
     startObstacleMovement() {
       clearInterval(this.obstacleInterval);
       this.obstacleInterval = setInterval(() => {
@@ -190,7 +209,7 @@ const jsonPath = `${baseURL}cars.json`;
       .then((data) => {
         this.vehicles = data.cars.map((car) => ({
           value: car.name.toLowerCase().replace(/\s/g, '_'),
-          image: car.url,
+          image: this.getCarImage(car.name),
           name: car.name,
           lives: car.lives,
           speed: car.speed,
@@ -219,7 +238,7 @@ const jsonPath = `${baseURL}cars.json`;
 .render {
   width: 100%;
   height: 100%;
-  background-image: url("/images/background_road.png");
+  background-image:url("@/assets/background_road.png");;
   background-size: cover;
   position: relative;
   margin: 0 auto;

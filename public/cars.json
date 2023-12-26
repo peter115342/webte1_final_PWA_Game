@@ -2,7 +2,7 @@
     "cars": [
       {
         "name" : "Sports Car",
-        "url" : "/images/car_sport.png",
+        "url" : "@/assets/car_sport.png",
         "lives" : 1,
         "speed" : 2.5
       },
