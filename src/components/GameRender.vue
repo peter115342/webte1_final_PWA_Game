@@ -1,7 +1,7 @@
 <template>
   <div class="render" ref="renderWindow" @keydown="handleKeyDown" tabindex="0">
     <img
-      :style="{ left: `${imagePosition.x}px`, top: `${imagePosition.y}px`, width: `55px` }"
+      :style="{ left: `${imagePosition.x}px`, top: `${imagePosition.y}px`, width: `65px` }"
       :src="selectedVehicleImage"
       alt="Car"
     />
@@ -13,7 +13,13 @@
       alt="Obstacle"
     />
 
-    <div class="lives-container"> Lives : {{ selectedVehicleLives }}</div>
+    <div class="lives-container"> Lives: {{ selectedVehicleLives }}</div>
+
+    <div class="finish-line" v-if="showFinishLine">Finish Line</div>
+
+    <div class="level-counter">Level: {{ currentLevel }}</div>
+
+    
   </div>
 </template>
 
@@ -32,7 +38,7 @@ export default {
     return {
       imagePosition: { x: 0, y: 0 },
       moveStep: 3,
-      imageWidth: 55,
+      imageWidth: 65,
       selectedVehicleImage: carSportImage,
       vehicles: [],
       selectedVehicle: 'sports_car',
@@ -42,6 +48,14 @@ export default {
       visibleObstacles: [],
       modalClosed: false,
       obstacleInterval: null,
+      currentLevel: 1,
+      maxObstacles: 0,
+      levels: [],
+      showFinishLine: false,
+      finishLineY: 100, 
+      passedObstaclesCount: 0,
+      displayModal: true,
+      isGyroscopeSupported: false,
     };
   },
   methods: {
@@ -83,22 +97,20 @@ export default {
       return obstacle.y > renderWindowHeight - 75;
     },
 
-    checkCollision() {
+    checkCollision(obstacle) {
       const carLeft = this.imagePosition.x;
       const carRight = carLeft + this.imageWidth;
       const carTop = this.imagePosition.y;
       const carBottom = carTop + this.imageWidth;
-
-      const obstacle = this.visibleObstacles[0];
 
       if (!obstacle || obstacle.collided) {
         return false;
       }
 
       const obstacleLeft = obstacle.x;
-      const obstacleRight = obstacleLeft + 55;
+      const obstacleRight = obstacleLeft + 65;
       const obstacleTop = obstacle.y;
-      const obstacleBottom = obstacleTop + 55;
+      const obstacleBottom = obstacleTop + 65;
 
       const horizontalOverlap = carLeft < obstacleRight && carRight > obstacleLeft;
       const verticalOverlap = carTop < obstacleBottom && carBottom > obstacleTop;
@@ -132,46 +144,90 @@ export default {
     },
 
     addObstacle() {
-      if (this.modalClosed && this.selectedVehicleLives > 0) {
-        console.log('Adding obstacle...');
+  if (this.modalClosed && this.selectedVehicleLives > 0 && this.visibleObstacles.length < this.maxObstacles) {
+    console.log('Adding obstacle...');
 
-        const images = [
-        obstacleVanImage,
-          obstacleTaxiImage,
-          obstacleAmbulanceImage,
-        ];
+    const images = [obstacleVanImage, obstacleTaxiImage, obstacleAmbulanceImage];
 
-        const newObstacle = {
-          id: this.obstacles.length + 1,
-          x: Math.random() * 400,
-          y: -50,
-          width: 55,
-          speed: this.selectedVehicleSpeed,
-          image: images[Math.floor(Math.random() * images.length)],
-          zIndex: 0,
-        };
+    const newObstacle = {
+      id: this.obstacles.length + 1,
+      x: Math.random() * (this.$refs.renderWindow.clientWidth - 65), // Adjusted for the width of the obstacle
+      y: Math.random() * -450,
+      width: 65,
+      speed: this.selectedVehicleSpeed * 2,
+      image: images[Math.floor(Math.random() * images.length)],
+      zIndex: 0,
+    };
 
-        this.obstacles.push(newObstacle);
-        this.visibleObstacles.push(newObstacle);
-      }
+    // Check for collisions with existing obstacles
+    const collision = this.visibleObstacles.some((obstacle) => {
+      const horizontalOverlap = Math.abs(newObstacle.x - obstacle.x) < 65;
+      const verticalOverlap = Math.abs(newObstacle.y - obstacle.y) < 65;
+      return horizontalOverlap && verticalOverlap;
+    });
+
+    if (!collision) {
+      this.obstacles.push(newObstacle);
+      this.visibleObstacles.push(newObstacle);
+
+      // Increment passed obstacles count
+      this.passedObstaclesCount++;
+    }
+  }
+},
+
+    resetGame() {
+      this.obstacles = [];
+      this.visibleObstacles = [];
+
+      this.displayModal = true;
+      this.modalClosed = false;
     },
+
     closeModal() {
       this.modalClosed = true;
       this.startObstacleMovement();
     },
     getCarImage(carName) {
-    switch (carName.toLowerCase()) {
-      case 'sports car':
-        return carSportImage;
-      case 'muscle car':
-        return carMuscleImage;
-      case 'pickup truck':
-        return carTruckImage;
-      default:
-        console.warn('Car image not found for:', carName);
-        return carSportImage;
-    }
-  },
+      switch (carName.toLowerCase()) {
+        case 'sports car':
+          return carSportImage;
+        case 'muscle car':
+          return carMuscleImage;
+        case 'pickup truck':
+          return carTruckImage;
+        default:
+          console.warn('Car image not found for:', carName);
+          return carSportImage;
+      }
+    },
+
+    setMaxObstacles(difficulty) {
+      switch (difficulty) {
+        case 'easy':
+          this.maxObstacles = 2;
+          break;
+        case 'medium':
+          this.maxObstacles = 4;
+          break;
+        case 'hard':
+          this.maxObstacles = 6;
+          break;
+        default:
+          this.maxObstacles = 0;
+      }
+    },
+
+    loadLevel(levelId) {
+      const level = this.levels.find((lvl) => lvl.id === levelId);
+
+      if (level) {
+        this.setMaxObstacles(level.difficulty);
+      } else {
+        console.warn('Level not found:', levelId);
+      }
+    },
+
     startObstacleMovement() {
       clearInterval(this.obstacleInterval);
       this.obstacleInterval = setInterval(() => {
@@ -188,21 +244,77 @@ export default {
             (obstacle) => !this.isObstacleOutsideRenderArea(obstacle)
           );
 
-          if (this.visibleObstacles.length === 0) {
+          if (this.visibleObstacles.length < this.maxObstacles) {
             this.addObstacle();
+          }
+
+          // Check if the player has reached the finish line
+          if (this.passedObstaclesCount >= 20 && !this.showFinishLine) {
+            this.showFinishLine = true;
+            this.nextLevel();
           }
         } else {
           clearInterval(this.obstacleInterval);
         }
       }, 16);
     },
+
+    nextLevel() {
+      console.log('Level completed! Moving to the next level.');
+      this.showFinishLine = false;
+
+      // Reset passed obstacles count for the next level
+      this.passedObstaclesCount = 0;
+
+      // Increase the current level
+      this.currentLevel++;
+
+      // Set displayModal to true to show the modal for picking a car again
+      this.displayModal = true;
+
+      // Load the next level
+      this.loadLevel(this.currentLevel);
+
+      // Reset player position and other necessary values for the new level
+      this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
+      this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
+
+      this.resetGame();
+      this.$emit('level-finished'); 
+      console.log('Event emitted:', this.currentLevel);
+    },
+
+    handleGyroscope(event) {
+      if (event.beta !== null && event.gamma !== null) {
+        const tiltLR = event.gamma / 2;
+        const tiltFB = event.beta / 4;
+        this.moveCarWithGyroscope(tiltLR, tiltFB);
+      }
+    },
+
+    moveCarWithGyroscope(tiltLR) {
+      const sensitivity = 2.5;
+
+      const newX = this.imagePosition.x + tiltLR * sensitivity;
+
+      const renderWindowWidth = this.$refs.renderWindow.clientWidth;
+      const renderWindowHeight = this.$refs.renderWindow.clientHeight;
+
+      if (newX >= 0 && newX + this.imageWidth <= renderWindowWidth) {
+        this.imagePosition.x = newX;
+      }
+
+      if (newY >= 0 && newY + this.imageWidth <= renderWindowHeight) {
+        this.imagePosition.y = newY;
+      }
+    },
   },
   mounted() {
     const isProduction = process.env.NODE_ENV === 'production';
-const baseURL = isProduction
-  ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' // Adjust for your dev environment
-  : '/';
-const jsonPath = `${baseURL}cars.json`;
+    const baseURL = isProduction
+      ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/'
+      : '/';
+    const jsonPath = `${baseURL}cars.json`;
 
     fetch(jsonPath)
       .then((response) => response.json())
@@ -216,20 +328,42 @@ const jsonPath = `${baseURL}cars.json`;
         }));
       });
 
-    this.addObstacle();
+    const levelsPath = `${baseURL}levels.json`;
+    fetch(levelsPath)
+      .then((response) => response.json())
+      .then((data) => {
+        this.levels = data.levels;
+        this.loadLevel(this.currentLevel);
+      });
 
     this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
+    if (window.innerWidth <= 600) {
+    this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.25;
+  } else {
     this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
-
+  }
     eventBus.on('vehicle-selected', this.updateSelectedVehicle);
     eventBus.on('closeModal', this.closeModal);
 
     document.addEventListener('keydown', this.handleKeyDown);
+
+    if (window.DeviceOrientationEvent) {
+      this.isGyroscopeSupported = true;
+
+      window.addEventListener('deviceorientation', this.handleGyroscope);
+    } else {
+      console.warn('Gyroscope not supported on this device.');
+    }
+
+    if (this.displayModal) {
+    }
   },
   beforeDestroy() {
     eventBus.off('vehicle-selected', this.updateSelectedVehicle);
     clearInterval(this.obstacleInterval);
     document.removeEventListener('keydown', this.handleKeyDown);
+
+    window.removeEventListener('deviceorientation', this.handleGyroscope);
   },
 };
 </script>
@@ -238,7 +372,7 @@ const jsonPath = `${baseURL}cars.json`;
 .render {
   width: 100%;
   height: 100%;
-  background-image:url("@/assets/background_road.png");;
+  background-image: url("@/assets/background_road.png");
   background-size: cover;
   position: relative;
   margin: 0 auto;
@@ -247,6 +381,7 @@ const jsonPath = `${baseURL}cars.json`;
 img {
   position: absolute;
 }
+
 .lives-container {
   position: absolute;
   bottom: 10px;
@@ -255,4 +390,25 @@ img {
   color: rgb(210, 26, 5);
   font-weight: bolder;
 }
+
+.finish-line {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: rgb(0, 0, 255);
+  font-weight: bold;
+}
+
+.level-counter {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 36px;
+  color: #08fcab;
+  font-weight: bolder;
+}
+
+
 </style>

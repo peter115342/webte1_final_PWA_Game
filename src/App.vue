@@ -1,15 +1,33 @@
 <script setup>
 import GameRender from './components/GameRender.vue';
 import Modal from './components/Modal.vue';
+import { ref } from 'vue';
 </script>
 
 <template>
   <div class="main-container">
-    <GameRender />
+    <GameRender @level-finished="openModal" />
     <Modal :visible="isModalVisible" @close="closeModal" />
   </div>
 </template>
 
+<script>
+export default {
+  data() {
+    return {
+      isModalVisible: true,
+    };
+  },
+  methods: {
+    closeModal() {
+      this.isModalVisible = false;
+    },
+    openModal() {
+      this.isModalVisible = true;
+    },
+  },
+};
+</script>
 <style scoped>
 body {
   margin: 0;
@@ -33,21 +51,3 @@ body {
   }
 }
 </style>
-
-<script>
-export default {
-  data() {
-    return {
-      isModalVisible: false,
-    };
-  },
-  mounted() {
-    this.isModalVisible = true;
-  },
-  methods: {
-    closeModal() {
-      this.isModalVisible = false;
-    },
-  },
-};
-</script>

@@ -80,6 +80,7 @@ export default {
     },
     closeModalAndNotify() {
       this.$emit('close', this.selectedVehicle);
+      console.log("Modal closed");
       eventBus.emit('closeModal');
       eventBus.emit('vehicle-selected', this.selectedVehicle);
     },
