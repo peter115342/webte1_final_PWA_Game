@@ -6,7 +6,7 @@ import { ref } from 'vue';
 
 <template>
   <div class="main-container">
-    <GameRender @level-finished="openModal" />
+    <GameRender @level-finished="openModal" @game-over="openModal" />
     <Modal :visible="isModalVisible" @close="closeModal" />
   </div>
 </template>

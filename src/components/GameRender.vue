@@ -15,11 +15,15 @@
 
     <div class="lives-container"> Lives: {{ selectedVehicleLives }}</div>
 
-    <div class="finish-line" v-if="showFinishLine">Finish Line</div>
+    <div class="finish-line" v-if="showFinishLine">
+      <img
+        :style="{ left: `${finishLine.x}px`, top: `${finishLine.y}px`, width: '100px', position: 'absolute' }"
+        src="@/assets/finish_flag.png"
+        alt="Finish Flag"
+      />
+    </div>
 
-    <div class="level-counter">Level: {{ currentLevel }}</div>
-
-    
+    <div class="level-counter">Level: {{ currentLevel }} - {{ getCurrentLevelDifficulty() }}</div>
   </div>
 </template>
 
@@ -52,7 +56,7 @@ export default {
       maxObstacles: 0,
       levels: [],
       showFinishLine: false,
-      finishLineY: 100, 
+      finishLine: { x: 0, y: 0, speed: 2 }, // Finish line position and speed
       passedObstaclesCount: 0,
       displayModal: true,
       isGyroscopeSupported: false,
@@ -76,6 +80,16 @@ export default {
 
       if (newX >= 0 && newX + this.imageWidth <= renderWindowWidth) {
         this.imagePosition.x = newX;
+      }
+    },
+    getCurrentLevelDifficulty() {
+      const level = this.levels.find((lvl) => lvl.id === this.currentLevel);
+
+      if (level) {
+        return level.difficulty;
+      } else {
+        console.warn('Level not found:', this.currentLevel);
+        return 'Unknown';
       }
     },
     updateSelectedVehicle(vehicle) {
@@ -112,8 +126,8 @@ export default {
       const obstacleTop = obstacle.y;
       const obstacleBottom = obstacleTop + 65;
 
-      const horizontalOverlap = carLeft < obstacleRight && carRight > obstacleLeft;
-      const verticalOverlap = carTop < obstacleBottom && carBottom > obstacleTop;
+      const horizontalOverlap = carLeft-5 < obstacleRight && carRight+5 > obstacleLeft;
+      const verticalOverlap = carTop-5 < obstacleBottom && carBottom+5 > obstacleTop;
 
       if (horizontalOverlap && verticalOverlap) {
         console.log('Collision Detected:');
@@ -130,56 +144,61 @@ export default {
     },
 
     handleCollision() {
-      console.log('Collision with obstacle!');
+  console.log('Collision with obstacle!');
 
-      if (this.selectedVehicleLives > 0) {
-        this.selectedVehicleLives -= 1;
+  if (this.selectedVehicleLives > 0) {
+    this.selectedVehicleLives -= 1;
 
-        if (this.selectedVehicleLives === 0) {
-          console.log('Game Over!');
-        } else {
-          console.log(`Lives remaining: ${this.selectedVehicleLives}`);
-        }
-      }
-    },
-
-    addObstacle() {
-  if (this.modalClosed && this.selectedVehicleLives > 0 && this.visibleObstacles.length < this.maxObstacles) {
-    console.log('Adding obstacle...');
-
-    const images = [obstacleVanImage, obstacleTaxiImage, obstacleAmbulanceImage];
-
-    const newObstacle = {
-      id: this.obstacles.length + 1,
-      x: Math.random() * (this.$refs.renderWindow.clientWidth - 65), // Adjusted for the width of the obstacle
-      y: Math.random() * -450,
-      width: 65,
-      speed: this.selectedVehicleSpeed * 2,
-      image: images[Math.floor(Math.random() * images.length)],
-      zIndex: 0,
-    };
-
-    // Check for collisions with existing obstacles
-    const collision = this.visibleObstacles.some((obstacle) => {
-      const horizontalOverlap = Math.abs(newObstacle.x - obstacle.x) < 65;
-      const verticalOverlap = Math.abs(newObstacle.y - obstacle.y) < 65;
-      return horizontalOverlap && verticalOverlap;
-    });
-
-    if (!collision) {
-      this.obstacles.push(newObstacle);
-      this.visibleObstacles.push(newObstacle);
-
-      // Increment passed obstacles count
-      this.passedObstaclesCount++;
+    if (this.selectedVehicleLives === 0) {
+      console.log('Game Over!');
+      this.$emit('game-over');
+      this.resetGame();
+    } else {
+      console.log(`Lives remaining: ${this.selectedVehicleLives}`);
     }
   }
 },
 
+addObstacle() {
+      if (this.modalClosed && this.selectedVehicleLives > 0 && this.visibleObstacles.length < this.maxObstacles) {
+        console.log('Adding obstacle...');
+
+        const images = [obstacleVanImage, obstacleTaxiImage, obstacleAmbulanceImage];
+
+        const obstacleWidth = window.innerWidth <= 600 ? 40 : 65; // Adjusted width based on window width
+
+        const newObstacle = {
+          id: this.obstacles.length + 1,
+          x: Math.random() * (this.$refs.renderWindow.clientWidth - obstacleWidth),
+          y: Math.random() * -450,
+          width: obstacleWidth,
+          speed: this.selectedVehicleSpeed * 2,
+          image: images[Math.floor(Math.random() * images.length)],
+          zIndex: 0,
+        };
+
+        const collision = this.visibleObstacles.some((obstacle) => {
+          const horizontalGap = 15; // Adjust the desired horizontal gap
+          const verticalGap = 15;
+
+          const horizontalOverlap = Math.abs(newObstacle.x - obstacle.x) < (obstacleWidth + horizontalGap);
+          const verticalOverlap = Math.abs(newObstacle.y - obstacle.y) < (obstacleWidth + verticalGap);
+
+          return horizontalOverlap && verticalOverlap;
+        });
+
+        if (!collision) {
+          this.obstacles.push(newObstacle);
+          this.visibleObstacles.push(newObstacle);
+
+          this.passedObstaclesCount++;
+        }
+      }
+    },
     resetGame() {
       this.obstacles = [];
       this.visibleObstacles = [];
-
+      this.passedObstaclesCount = 0;
       this.displayModal = true;
       this.modalClosed = false;
     },
@@ -248,7 +267,6 @@ export default {
             this.addObstacle();
           }
 
-          // Check if the player has reached the finish line
           if (this.passedObstaclesCount >= 20 && !this.showFinishLine) {
             this.showFinishLine = true;
             this.nextLevel();
@@ -259,28 +277,30 @@ export default {
       }, 16);
     },
 
+    moveFinishLine() {
+      if (this.showFinishLine && this.finishLine.y < this.$refs.renderWindow.clientHeight) {
+        this.finishLine.y += this.finishLine.speed;
+      }
+    },
+
+    startFinishLineMovement() {
+      setInterval(() => {
+        this.moveFinishLine();
+      }, 16);
+    },
+
     nextLevel() {
-      console.log('Level completed! Moving to the next level.');
       this.showFinishLine = false;
-
-      // Reset passed obstacles count for the next level
       this.passedObstaclesCount = 0;
-
-      // Increase the current level
       this.currentLevel++;
-
-      // Set displayModal to true to show the modal for picking a car again
       this.displayModal = true;
-
-      // Load the next level
       this.loadLevel(this.currentLevel);
 
-      // Reset player position and other necessary values for the new level
       this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
       this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
 
       this.resetGame();
-      this.$emit('level-finished'); 
+      this.$emit('level-finished');
       console.log('Event emitted:', this.currentLevel);
     },
 
@@ -294,7 +314,6 @@ export default {
 
     moveCarWithGyroscope(tiltLR) {
       const sensitivity = 2.5;
-
       const newX = this.imagePosition.x + tiltLR * sensitivity;
 
       const renderWindowWidth = this.$refs.renderWindow.clientWidth;
@@ -303,17 +322,12 @@ export default {
       if (newX >= 0 && newX + this.imageWidth <= renderWindowWidth) {
         this.imagePosition.x = newX;
       }
-
-      if (newY >= 0 && newY + this.imageWidth <= renderWindowHeight) {
-        this.imagePosition.y = newY;
-      }
     },
   },
   mounted() {
+    
     const isProduction = process.env.NODE_ENV === 'production';
-    const baseURL = isProduction
-      ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/'
-      : '/';
+    const baseURL = isProduction ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' : '/';
     const jsonPath = `${baseURL}cars.json`;
 
     fetch(jsonPath)
@@ -338,10 +352,11 @@ export default {
 
     this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
     if (window.innerWidth <= 600) {
-    this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.25;
-  } else {
-    this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
-  }
+      this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.25;
+    } else {
+      this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
+    }
+
     eventBus.on('vehicle-selected', this.updateSelectedVehicle);
     eventBus.on('closeModal', this.closeModal);
 
@@ -382,6 +397,13 @@ img {
   position: absolute;
 }
 
+
+  .lives-container,
+  .finish-line,
+  .level-counter {
+    font-size: 2px;
+  }
+
 .lives-container {
   position: absolute;
   bottom: 10px;
@@ -405,10 +427,8 @@ img {
   position: absolute;
   bottom: 10px;
   right: 10px;
-  font-size: 36px;
+  font-size: 28px;
   color: #08fcab;
   font-weight: bolder;
 }
-
-
 </style>
