@@ -2,9 +2,36 @@
   <div class="modal-overlay" v-if="visible">
     <div class="modal">
       <div class="banner">
-        <h2 class="banner-text">Speedy Escape</h2>
+        <img :src="logo" alt="Speedy Escape" style="width: 250px; height: 30px;" />
         <p>Try not to crash and reach the finish!</p>
         <p>Choose your vehicle:</p>
+        <button class="tutorial-button" @click="showTutorial">How to Play?</button>
+      </div>
+
+      <div v-if="showTutorialModal" class="tutorial-modal">
+        <h2 class="tutorial-banner">How to Play?</h2>
+        <p>Welcome to Speedy Escape! Follow these instructions to play the game:</p>
+        <ul class="tutorial-list">
+    <li> The car accelerates automatically</li>
+    <li> You cannot slow the car down!</li>
+    <li class="icon-label">Steer with arrow keys on a computer</li>
+    <li class="icon-li">
+        <img :src="arrowLeft" alt="Arrow Keys"  style="width: 50px; height: 45px;" />
+        <img :src="arrowRight" alt="Arrow Keys"  style="width: 50px; height: 45px;" />
+    </li>
+    <li class="icon-label">Steer by tilting your mobile device </li>
+    <li class="icon-li">
+        <img :src="gyroPhone" alt="Phone tilting" style="width: 70px; height: 80px;" />
+    </li>
+
+    <li> You lose a life when you crash (bottom left)</li>
+    <li> When have no lives level restarts</li>
+    <li> Each level has a difficulty (bottom right)</li>
+    <li> Pause by tapping  the logo at the bottom</li>
+    <li> Select a car and get going, no time to waste!</li>
+</ul>
+
+        <button  class="close_tutorial" @click="closeTutorialModal">Menu</button>
       </div>
 
       <label v-for="vehicle in vehicles" :key="vehicle.value">
@@ -31,10 +58,13 @@
 <script>
 import { eventBus } from './utils/eventBus.js';
 
-// Import images for each car
 import sportsCarImage from '@/assets/car_sport.png';
 import muscleCarImage from '@/assets/car_muscle.png';
 import truckImage from '@/assets/car_truck.png';
+import arrowLeft from '@/assets/arrow_left.svg';
+import arrowRight from '@/assets/arrow_right.svg';
+import gyroPhone from '@/assets/gyro_phone.svg';
+import logo from '@/assets/logo.png';
 
 export default {
   props: {
@@ -44,12 +74,17 @@ export default {
     return {
       selectedVehicle: 'sports_car',
       vehicles: [],
+      showTutorialModal: false,
+      arrowLeft: arrowLeft,
+      arrowRight: arrowRight,
+      gyroPhone: gyroPhone,
+      logo:logo,
     };
   },
   mounted() {
     const isProduction = import.meta.env.PROD;
     const baseURL = isProduction
-      ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' // Adjust for your dev environment
+      ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' 
       : '/';
 
     const jsonPath = `${baseURL}cars.json`;
@@ -75,7 +110,7 @@ export default {
         case 'Pickup Truck':
           return truckImage;
         default:
-          return ''; // Provide a default image or handle accordingly
+          return '';
       }
     },
     closeModalAndNotify() {
@@ -91,6 +126,12 @@ export default {
       return selectedVehicle
         ? `${selectedVehicle.name} - Lives: ${selectedVehicle.lives}, Speed: ${Math.round(selectedVehicle.speed)}`
         : '';
+    },
+    showTutorial() {
+      this.showTutorialModal = true;
+    },
+    closeTutorialModal() {
+      this.showTutorialModal = false;
     },
   },
 };
@@ -108,6 +149,16 @@ export default {
   justify-content: center;
   align-items: center;
 }
+.tutorial-list{
+
+}
+.tutorial-list li{
+  font-weight: bolder;
+  color: rgb(31, 30, 30);
+  margin-top:  5px;
+
+}
+
 p {
   font-weight: bolder;
   color: rgb(31, 30, 30);
@@ -116,12 +167,37 @@ h2 {
   font-weight: bolder;
   color: rgb(31, 30, 30);
 }
+.icon-li{
+  list-style-type: none;
+  margin: 0;
+  margin-top: 0;
+}
+.icon-label{
+  margin-bottom: 0;
+}
 .modal {
   background: rgb(233, 135, 6);
   padding: 45px;
-  padding-top: 7px;
+  padding-top: 20px;
   border-radius: 8px;
   width: 400px;
+  position: relative;
+  z-index: 3;
+}
+.tutorial-modal {
+  background: #7e7c7c;
+  padding: 20px;
+  border-radius: 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+}
+.tutorial-banner{
+  text-align: center;
+  color: rgb(233, 135, 6);
 }
 label {
   display: flex;
@@ -140,16 +216,18 @@ input[type="radio"] {
 .close_button {
   margin-top: 10px;
   width: 125px;
-  height: 25px;
+  height: 35px;
   border-radius: 5px;
   text-align: center;
   align-self: center;
   display: block;
   margin-left: auto;
   margin-right: auto;
-  background-color: rgb(174, 176, 173);
+  background-color: #4caf50;
   font-weight: bolder;
-  border: 5px solid rgb(72, 159, 10);
+  cursor: pointer;
+  border: none;
+  color: white;
 }
 .selected {
   transform: scale(1.25);
@@ -162,6 +240,32 @@ input[type="radio"] {
 }
 .banner-text {
   margin-top: 0px;
+}
+.tutorial-button {
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #564caf;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bolder;
+}
+.close_tutorial{
+  margin-top: 10px;
+  width: 125px;
+  height: 35px;
+  border-radius: 5px;
+  text-align: center;
+  align-self: center;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #003cff;
+  font-weight: bolder;
+  cursor: pointer;
+  border: none;
+  color: white;
 }
 #vehicle-details{
   text-align: center;

@@ -40,6 +40,7 @@ body {
   position: relative;
   width: 100vw;
   height: 95vh;
+  margin-top: 0;
   max-width: 600px;
   margin: 0 auto;
   overflow: hidden;
