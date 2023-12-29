@@ -28,7 +28,7 @@ export default {
   },
 };
 </script>
-<style scoped>
+<style >
 body {
   margin: 0;
   margin-top: 0;
@@ -49,6 +49,18 @@ body {
 @media (max-width: 600px) {
   .main-container {
     height: 90vh;
+  }
+}
+
+@media print {
+  body {
+    visibility: hidden;
+  }
+  .tutorial-modal{
+    visibility: visible;
+    position: absolute;
+    left: 0;
+    top: 0;
   }
 }
 </style>

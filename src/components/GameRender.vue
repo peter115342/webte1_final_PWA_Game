@@ -39,7 +39,8 @@ import obstacleVanImage from '@/assets/obstacle_van.png';
 import obstacleTaxiImage from '@/assets/obstacle_taxi.png';
 import obstacleAmbulanceImage from '@/assets/obstacle_ambulance.png';
 import { ref, onMounted, onBeforeUnmount, createApp } from 'vue';
-import { eventBus } from './utils/eventBus.js';
+import { eventBus, EVENTS } from './utils/eventBus.js'; // Import EVENTS from eventBus.js
+
 import logo from '@/assets/logo.png';
 import pause from '@/assets/pause.svg';
 
@@ -266,7 +267,11 @@ export default {
       } else {
         console.warn('Level not found:', levelId);
       }
-    },
+    },  startGame(selectedLevel) {
+    this.currentLevel = selectedLevel;
+    this.displayModal = false; 
+    this.startObstacleMovement();
+  },
 
     startObstacleMovement() {
       clearInterval(this.obstacleInterval);
@@ -377,7 +382,10 @@ export default {
 
     eventBus.on('vehicle-selected', this.updateSelectedVehicle);
     eventBus.on('closeModal', this.closeModal);
-
+    eventBus.on(EVENTS.SET_CURRENT_LEVEL, this.handleSetCurrentLevel);
+    eventBus.on(EVENTS.START_GAME, (selectedLevel) => {
+    this.startGame(selectedLevel);
+  });
     document.addEventListener('keydown', this.handleKeyDown);
 
     if (window.DeviceOrientationEvent) {
@@ -395,6 +403,7 @@ export default {
     eventBus.off('vehicle-selected', this.updateSelectedVehicle);
     clearInterval(this.obstacleInterval);
     document.removeEventListener('keydown', this.handleKeyDown);
+    eventBus.off(EVENTS.SET_CURRENT_LEVEL, this.handleSetCurrentLevel);
 
     window.removeEventListener('deviceorientation', this.handleGyroscope);
   },
