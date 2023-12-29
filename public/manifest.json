@@ -1,0 +1,45 @@
+{
+    "name": "Speedy Escape",
+    "short_name": "SE",
+    "description": "Simple car web game",
+    "start_url": "https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/",
+    "id": "/~xmuzslay/anbzvavapva/",
+    "orientation": "portrait",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#564caf",
+    "icons": [
+      {
+        "src": "small_icon.png",
+        "sizes": "170x94",
+        "type": "image/png",
+        "purpose": "any"
+      },
+      {
+        "src": "large_icon.png",
+        "sizes": "564x569",
+        "type": "image/png"
+      },
+      {
+        "src": "square_icon.png",
+        "sizes": "342x342",
+        "type": "image/png"
+      }
+    ],
+    "screenshots": [
+      {
+        "src": "screenshot.png",
+        "sizes": "1139x1190",
+        "type": "image/png",
+        "purpose": "any",
+        "form_factor": "wide"
+      },
+      {
+        "src": "screenshot_mobile.png",
+        "sizes": "547x964",
+        "type": "image/png",
+        "purpose": "any"
+      }
+    ]
+  }
+  

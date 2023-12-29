@@ -13,7 +13,6 @@
         <p>Welcome to Speedy Escape! Follow these instructions to play the game:</p>
         <ul class="tutorial-list">
           <li>The car accelerates automatically</li>
-          <li>You cannot slow the car down!</li>
           <li class="icon-label">Steer with arrow keys on a computer</li>
           <li class="icon-li">
             <img :src="arrowLeft" alt="Arrow Keys" style="width: 50px; height: 45px;" />
@@ -24,9 +23,8 @@
             <img :src="gyroPhone" alt="Phone tilting" style="width: 70px; height: 80px;" />
           </li>
 
-          <li>You lose a life when you crash (bottom left)</li>
-          <li>When you have no lives, the level restarts</li>
-          <li>Each level has a difficulty (bottom right)</li>
+          <li>You lose a life when you crash</li>
+          <li>When you have no lives, it takes you back to the menu</li>
           <li>Select which level to play in the menu</li>
           <li>Pause by tapping the logo at the bottom</li>
           <li>Select a car and get going, no time to waste!</li>
@@ -181,6 +179,7 @@ export default {
     font-weight: bolder;
     color: rgb(31, 30, 30);
     margin-top: 5px;
+    margin-left: 0px;
   }
 
   p {
@@ -292,7 +291,7 @@ export default {
   }
 
   .close_tutorial {
-    margin-top: 10px;
+    margin-top: 25px;
     width: 125px;
     height: 35px;
     border-radius: 5px;

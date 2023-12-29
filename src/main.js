@@ -1,9 +1,9 @@
-import './assets/main.css'
+import { createApp } from 'vue';
+import App from './App.vue';
+import manifest from './public/manifest.json';
 
-import { createApp } from 'vue'
-import App from './App.vue'
+const app = createApp(App);
 
-const app = createApp(App)
+console.log(manifest.name);
 
-
-app.mount('#app')
+app.mount('#app');
