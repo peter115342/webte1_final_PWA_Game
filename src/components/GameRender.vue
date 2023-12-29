@@ -12,7 +12,21 @@
       :src="obstacle.image"
       alt="Obstacle"
     />
+    <img class="hint-button" :src="hint_icon" alt="Hint" @click="toggleHintModal" />
 
+    <div v-if="showHintModal" class="hint-modal">
+  <div class="hint-content">
+    <p v-if="isMobile">Steer by tilting your device</p>
+    <p v-else>Steer using arrow keys</p>
+    <div class="hint-images-container">
+      <img id="gyro" v-if="isMobile" class="hint-image" :src="gyroPhone" alt="Gyro" style="width: 60px; height: 60px;" />
+      <div  v-else class="hint-images-container" >
+        <img  id="left-arrow" class="hint-image" :src="arrowLeft" alt="Left"/>
+        <img  id="right-arrow" class="hint-image" :src="arrowRight" alt="Right"/>
+      </div>
+    </div>
+  </div>
+</div>
     <div class="lives-container"> Lives: {{ selectedVehicleLives }}</div>
 
     <div class="finish-line" v-if="showFinishLine">
@@ -43,7 +57,10 @@ import { eventBus, EVENTS } from './utils/eventBus.js'; // Import EVENTS from ev
 
 import logo from '@/assets/logo.png';
 import pause from '@/assets/pause.svg';
-
+import hint_icon from '@/assets/hint.svg';
+import arrowLeft from '@/assets/arrow_left.svg';
+import arrowRight from '@/assets/arrow_right.svg';
+import gyroPhone from '@/assets/gyro_phone.svg';
 export default {
   data() {
     return {
@@ -63,18 +80,23 @@ export default {
       maxObstacles: 0,
       levels: [],
       showFinishLine: false,
-      finishLine: { x: 0, y: 0, speed: 2 }, // Finish line position and speed
+      finishLine: { x: 0, y: 0, speed: 2 },
       passedObstaclesCount: 0,
       displayModal: true,
       isGyroscopeSupported: false,
       logo: logo,
       pause : pause,
+      hint_icon:hint_icon,
       paused: false,
+      showHintModal: false,
+      arrowLeft: arrowLeft,
+      arrowRight: arrowRight,
+      gyroPhone: gyroPhone,
     };
   },
   methods: {
     handleKeyDown(event) {
-      if (this.paused) return; // Don't handle key events if paused
+      if (this.paused) return;
 
       const renderWindowWidth = this.$refs.renderWindow.clientWidth;
 
@@ -172,40 +194,50 @@ export default {
     },
 
     addObstacle() {
-      if (this.modalClosed && this.selectedVehicleLives > 0 && this.visibleObstacles.length < this.maxObstacles) {
-        console.log('Adding obstacle...');
+  if (this.modalClosed && this.selectedVehicleLives > 0 && this.visibleObstacles.length < this.maxObstacles) {
+    console.log('Adding obstacle...');
 
-        const images = [obstacleVanImage, obstacleTaxiImage, obstacleAmbulanceImage];
+    const images = [obstacleVanImage, obstacleTaxiImage, obstacleAmbulanceImage];
 
-        const obstacleWidth = window.innerWidth <= 600 ? 40 : 65; // Adjusted width based on window width
+    const obstacleWidth = window.innerWidth <= 600 ? 40 : 65; // Adjusted width based on window width
 
-        const newObstacle = {
-          id: this.obstacles.length + 1,
-          x: Math.random() * (this.$refs.renderWindow.clientWidth - obstacleWidth),
-          y: Math.random() * -450,
-          width: obstacleWidth,
-          speed: this.selectedVehicleSpeed * 2,
-          image: images[Math.floor(Math.random() * images.length)],
-          zIndex: 0,
-        };
+    const newObstacle = {
+      id: this.obstacles.length + 1,
+      x: Math.random() * (this.$refs.renderWindow.clientWidth - obstacleWidth),
+      y: Math.random() * -450,
+      width: obstacleWidth,
+      speed: this.selectedVehicleSpeed * 2,
+      image: images[Math.floor(Math.random() * images.length)],
+      zIndex: 0,
+    };
 
-        const collision = this.visibleObstacles.some((obstacle) => {
-          const horizontalGap = 15; // Adjust the desired horizontal gap
-          const verticalGap = 15;
+    const collision = this.visibleObstacles.some((obstacle) => {
+      const horizontalGap = 15; // Adjust the desired horizontal gap
+      const verticalGap = 15;
 
-          const horizontalOverlap = Math.abs(newObstacle.x - obstacle.x) < obstacleWidth + horizontalGap;
-          const verticalOverlap = Math.abs(newObstacle.y - obstacle.y) < obstacleWidth + verticalGap;
+      const horizontalOverlap = Math.abs(newObstacle.x - obstacle.x) < obstacleWidth + horizontalGap;
+      const verticalOverlap = Math.abs(newObstacle.y - obstacle.y) < obstacleWidth + verticalGap;
 
-          return horizontalOverlap && verticalOverlap;
-        });
+      return horizontalOverlap && verticalOverlap;
+    });
 
-        if (!collision) {
-          this.obstacles.push(newObstacle);
-          this.visibleObstacles.push(newObstacle);
+    if (!collision) {
+      this.obstacles.push(newObstacle);
+      this.visibleObstacles.push(newObstacle);
 
-          this.passedObstaclesCount++;
-        }
-      }
+      this.passedObstaclesCount++;
+    }
+  }
+},
+openHintModal() {
+      this.showHintModal = true;
+    },
+
+    closeHintModal() {
+      this.showHintModal = false;
+    },
+    toggleHintModal() {
+      this.showHintModal = !this.showHintModal;
     },
     resetGame() {
       this.obstacles = [];
@@ -213,7 +245,7 @@ export default {
       this.passedObstaclesCount = 0;
       this.displayModal = true;
       this.modalClosed = false;
-      this.paused = false; // Reset pause state
+      this.paused = false;
     },
 
     togglePause() {
@@ -244,20 +276,20 @@ export default {
     },
 
     setMaxObstacles(difficulty) {
-      switch (difficulty) {
-        case 'easy':
-          this.maxObstacles = 2;
-          break;
-        case 'medium':
-          this.maxObstacles = 4;
-          break;
-        case 'hard':
-          this.maxObstacles = 6;
-          break;
-        default:
-          this.maxObstacles = 0;
-      }
-    },
+  switch (difficulty) {
+    case 'easy':
+      this.maxObstacles = 2;
+      break;
+    case 'medium':
+      this.maxObstacles = 4;
+      break;
+    case 'hard':
+      this.maxObstacles = 6;
+      break;
+    default:
+      this.maxObstacles = 0;
+  }
+},
 
     loadLevel(levelId) {
       const level = this.levels.find((lvl) => lvl.id === levelId);
@@ -269,7 +301,7 @@ export default {
       }
     },  startGame(selectedLevel) {
     this.currentLevel = selectedLevel;
-    this.displayModal = false; 
+    this.displayModal = false;
     this.startObstacleMovement();
   },
 
@@ -346,6 +378,11 @@ export default {
       if (newX >= 0 && newX + this.imageWidth <= renderWindowWidth) {
         this.imagePosition.x = newX;
       }
+    },
+  },
+  computed: {
+    isMobile() {
+      return window.innerWidth <= 600;
     },
   },
   mounted() {
@@ -471,5 +508,53 @@ img {
   width: 200px;
   height: 200px;
 }
+
+.hint-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+  width: 80px;
+  height: 55px;
+}
+
+.hint-modal {
+  position: absolute;
+  top: 70px;
+  left: 10px;
+  width: 125px;
+  height: fit-content;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hint-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  height: 120px;
+  text-align: center;
+}
+.hint-images-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+.hint-image {
+  width: 50px;
+  height: 50px;
+  margin-top: 25px;
+}
+
+#left-arrow{
+  transform: translateX(-50%);
+}
+#right-arrow{
+  transform: translateX(50%);
+} 
 
 </style>

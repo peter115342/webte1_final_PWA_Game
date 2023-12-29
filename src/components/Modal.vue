@@ -52,7 +52,6 @@
       <p>Select a level:</p>
 
       <div class="level-buttons">
-        <!-- Remove the start button and directly trigger the game with the selected level -->
         <label
           v-for="level in levels"
           :key="level"
@@ -154,7 +153,7 @@ export default {
       this.$emit('close', this.selectedVehicle);
       console.log('Modal closed');
       eventBus.emit('closeModal');
-      eventBus.emit(EVENTS.START_GAME, selectedLevel); // Emit event to start the game with the selected level
+      eventBus.emit(EVENTS.START_GAME, selectedLevel); // Use the correct event name
       eventBus.emit('vehicle-selected', this.selectedVehicle);
       eventBus.emit(EVENTS.SET_CURRENT_LEVEL, selectedLevel);
     },

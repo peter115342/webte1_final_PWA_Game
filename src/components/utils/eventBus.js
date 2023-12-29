@@ -24,6 +24,7 @@ const eventBus = {
     document.removeEventListener(event, callback);
   },
 };
+const events = mitt();
 
 // Define events
 export const EVENTS = {
