@@ -49,19 +49,25 @@
       <p id="vehicle-details" v-if="selectedVehicle">
         Selected: {{ getSelectedVehicleDetails() }}
       </p>
-      <p>Select a level:</p>
+      <div class="level-selection">
+        <p>Select a level:</p>
+        <div class="level-buttons">
+          <label
+            v-for="level in levels"
+            :key="level"
+            :for="'level' + level"
+            class="level-button"
+            @click="startGame(level)"
+            :class="{ 'selected': selectedLevel === level }"
+            :style="{ backgroundColor: isLevelCompleted(level) ? '#05a46e' : '#564caf' }"
+          >
+            {{ level }}
+          </label>
+        </div>
 
-      <div class="level-buttons">
-        <label
-          v-for="level in levels"
-          :key="level"
-          :for="'level' + level"
-          class="level-button"
-          @click="startGame(level)"
-        >
-          {{ level }}
-        </label>
       </div>
+      <button class="reset-progress-button" @click="resetProgress">Reset Progress</button>
+
     </div>
   </div>
 </template>
@@ -92,6 +98,7 @@ export default {
       arrowRight: arrowRight,
       gyroPhone: gyroPhone,
       logo: logo,
+      completedLevels: [],
     };
   },
   mounted() {
@@ -112,6 +119,10 @@ export default {
           speed: car.speed,
         }));
       });
+      const storedCompletedLevels = localStorage.getItem('completedLevels');
+  if (storedCompletedLevels) {
+    this.completedLevels = JSON.parse(storedCompletedLevels);
+  }
   },
   methods: {
     getCarImage(carName) {
@@ -126,6 +137,30 @@ export default {
           return '';
       }
     },
+    isLevelCompleted(level) {
+  const storedCompletedLevels = localStorage.getItem('completedLevels');
+  if (storedCompletedLevels) {
+    try {
+      const completedLevels = JSON.parse(storedCompletedLevels);
+      const isCompleted = completedLevels.includes(level);
+      console.log(`Level ${level} is ${isCompleted ? 'completed' : 'not completed'}`);
+      return isCompleted;
+    } catch (error) {
+      console.error('Error parsing completed levels from localStorage:', error);
+      return false;
+    }
+  } else {
+    console.warn('No completed levels found in localStorage.');
+    return false;
+  }
+},
+resetProgress() {
+      localStorage.setItem('completedLevels', JSON.stringify([-1]));
+      this.completedLevels = [-1];
+      window.location.reload();
+
+    },
+
     closeModalAndNotify() {
       this.$emit('close', this.selectedVehicle);
       console.log('Modal closed');
@@ -149,11 +184,10 @@ export default {
       this.showTutorialModal = false;
     },
     startGame(selectedLevel) {
-      // Close the modal and start the game with the selected level
       this.$emit('close', this.selectedVehicle);
       console.log('Modal closed');
       eventBus.emit('closeModal');
-      eventBus.emit(EVENTS.START_GAME, selectedLevel); // Use the correct event name
+      eventBus.emit(EVENTS.START_GAME, selectedLevel);
       eventBus.emit('vehicle-selected', this.selectedVehicle);
       eventBus.emit(EVENTS.SET_CURRENT_LEVEL, selectedLevel);
     },
@@ -336,5 +370,15 @@ export default {
 
   .level-button span {
     display: inline-block;
+  }
+  .reset-progress-button {
+    margin-top: 10px;
+    background-color: #d71111;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: fit-content;
+    font-size: 12px;
   }
 </style>

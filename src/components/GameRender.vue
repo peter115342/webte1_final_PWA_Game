@@ -30,9 +30,7 @@
     <div class="lives-container"> Lives: {{ selectedVehicleLives }}</div>
 
     
-    <div class="logo-container" @click="togglePause">
-      <img :src="logo" alt="Speedy Escape" style="width: 250px; height: 40px;" />
-    </div>
+      <img :src="pause" alt="Speedy Escape"  @click="togglePause"  class="pause-button" />
     <img v-if="paused" class="pause-image" :src="pause" alt="Pause" />
 
     <div class="level-counter">Level: {{ currentLevel }} - {{ getCurrentLevelDifficulty() }}</div>
@@ -283,7 +281,10 @@ openHintModal() {
       this.maxObstacles = 0;
   }
 },
-
+isLevelCompleted(level) {
+    const completedLevels = JSON.parse(localStorage.getItem('completedLevels')) || [];
+    return completedLevels.includes(level);
+},
 loadLevel(levelId) {
   const level = this.levels.find((lvl) => lvl.id === levelId);
 
@@ -294,6 +295,7 @@ loadLevel(levelId) {
   }
 },  
 startGame(selectedLevel) {
+ 
     this.currentLevel = selectedLevel;
     this.displayModal = false;
     this.startObstacleMovement();
@@ -330,18 +332,22 @@ startGame(selectedLevel) {
 
   
     nextLevel() {
-      this.passedObstaclesCount = 0;
-      this.currentLevel++;
-      this.displayModal = true;
-      this.loadLevel(this.currentLevel);
+  const completedLevels = JSON.parse(localStorage.getItem('completedLevels')) || [];
+  completedLevels.push(this.currentLevel);
+  localStorage.setItem('completedLevels', JSON.stringify(completedLevels));
 
-      this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
-      this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
+  this.passedObstaclesCount = 0;
+  this.currentLevel++;
+  this.displayModal = true;
+  this.loadLevel(this.currentLevel);
 
-      this.resetGame();
-      this.$emit('level-finished');
-      console.log('Event emitted:', this.currentLevel);
-    },
+  this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
+  this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
+
+  this.resetGame();
+  this.$emit('level-finished');
+  console.log('Event emitted:', this.currentLevel);
+},
 
     handleGyroscope(event) {
       if (event.beta !== null && event.gamma !== null) {
@@ -356,7 +362,6 @@ startGame(selectedLevel) {
       const newX = this.imagePosition.x + tiltLR * sensitivity;
 
       const renderWindowWidth = this.$refs.renderWindow.clientWidth;
-      const renderWindowHeight = this.$refs.renderWindow.clientHeight;
 
       if (newX >= 0 && newX + this.imageWidth <= renderWindowWidth) {
         this.imagePosition.x = newX;
@@ -384,7 +389,13 @@ startGame(selectedLevel) {
           speed: car.speed,
         }));
       });
+      const completedLevelsKey = 'completedLevels';
+  const storedCompletedLevels = localStorage.getItem(completedLevelsKey);
 
+  if (!storedCompletedLevels || JSON.parse(storedCompletedLevels).length === 0) {
+    const initialCompletedLevels = [-1];
+    localStorage.setItem(completedLevelsKey, JSON.stringify(initialCompletedLevels));
+  }
     const levelsPath = `${baseURL}levels.json`;
     fetch(levelsPath)
       .then((response) => response.json())
@@ -465,15 +476,7 @@ img {
   font-weight: bolder;
 }
 
-.finish-line {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 20px;
-  color: rgb(0, 0, 255);
-  font-weight: bold;
-}
+
 
 .level-counter {
   position: absolute;
@@ -500,6 +503,14 @@ img {
   width: 80px;
   height: 55px;
 }
+.pause-button {
+  position: absolute;
+  top: 85px;
+  left: 10px;
+  cursor: pointer;
+  width: 85px;
+  height: 65px;
+}
 
 .hint-modal {
   position: absolute;
@@ -507,18 +518,18 @@ img {
   left: 10px;
   width: 125px;
   height: fit-content;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .hint-content {
-  background: #fff;
+  background: rgba(131, 130, 130, 0.9);
   padding: 20px;
   border-radius: 5px;
   height: 120px;
   text-align: center;
+  z-index: 1;
 }
 .hint-images-container {
   display: flex;
