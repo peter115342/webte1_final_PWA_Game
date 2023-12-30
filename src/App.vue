@@ -26,6 +26,9 @@ export default {
       this.isModalVisible = true;
     },
   },
+  mounted() {
+    document.title = 'Speedy Escape';
+  },
 };
 </script>
 <style  >
