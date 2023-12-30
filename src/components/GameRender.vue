@@ -29,13 +29,7 @@
 </div>
     <div class="lives-container"> Lives: {{ selectedVehicleLives }}</div>
 
-    <div class="finish-line" v-if="showFinishLine">
-      <img
-        :style="{ left: `${finishLine.x}px`, top: `${finishLine.y}px`, width: '100px', position: 'absolute' }"
-        src="@/assets/finish_flag.png"
-        alt="Finish Flag"
-      />
-    </div>
+    
     <div class="logo-container" @click="togglePause">
       <img :src="logo" alt="Speedy Escape" style="width: 250px; height: 40px;" />
     </div>
@@ -79,7 +73,6 @@ export default {
       currentLevel: 1,
       maxObstacles: 0,
       levels: [],
-      showFinishLine: false,
       finishLine: { x: 0, y: 0, speed: 2 },
       passedObstaclesCount: 0,
       displayModal: true,
@@ -291,15 +284,16 @@ openHintModal() {
   }
 },
 
-    loadLevel(levelId) {
-      const level = this.levels.find((lvl) => lvl.id === levelId);
+loadLevel(levelId) {
+  const level = this.levels.find((lvl) => lvl.id === levelId);
 
-      if (level) {
-        this.setMaxObstacles(level.difficulty);
-      } else {
-        console.warn('Level not found:', levelId);
-      }
-    },  startGame(selectedLevel) {
+  if (level) {
+    this.setMaxObstacles(level.difficulty);
+  } else {
+    console.warn('Level not found:', levelId);
+  }
+},  
+startGame(selectedLevel) {
     this.currentLevel = selectedLevel;
     this.displayModal = false;
     this.startObstacleMovement();
@@ -325,28 +319,17 @@ openHintModal() {
             this.addObstacle();
           }
 
-          if (this.passedObstaclesCount >= 20 && !this.showFinishLine) {
-            this.showFinishLine = true;
+          if (this.passedObstaclesCount >= 20 ) {
             this.nextLevel();
           }
         }
       }, 16);
     },
 
-    moveFinishLine() {
-      if (this.showFinishLine && this.finishLine.y < this.$refs.renderWindow.clientHeight) {
-        this.finishLine.y += this.finishLine.speed;
-      }
-    },
+    
 
-    startFinishLineMovement() {
-      setInterval(() => {
-        this.moveFinishLine();
-      }, 16);
-    },
-
+  
     nextLevel() {
-      this.showFinishLine = false;
       this.passedObstaclesCount = 0;
       this.currentLevel++;
       this.displayModal = true;

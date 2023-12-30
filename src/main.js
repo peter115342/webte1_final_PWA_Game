@@ -3,11 +3,10 @@ import App from './App.vue';
 
 const app = createApp(App);
 
-(async () => {
-  let manifest = {};
+let manifest = {};
 
-  // Import the manifest dynamically using import.meta.glob
-  const importManifest = import.meta.glob('./public/manifest.json');
+if (import.meta.env.MODE === 'development') {
+  const importManifest = await   import.meta.glob('./public/manifest.json');
   const manifestPaths = Object.keys(importManifest);
 
   if (manifestPaths.length > 0) {
@@ -17,8 +16,8 @@ const app = createApp(App);
   } else {
     console.error('Manifest file not found.');
   }
+}
 
-  console.log(manifest.name);
+console.log(manifest.name);
 
-  app.mount('#app');
-})();
+app.mount('#app');
