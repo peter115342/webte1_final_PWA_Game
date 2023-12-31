@@ -1,10 +1,11 @@
 <template>
   <div class="render" ref="renderWindow" @keydown="handleKeyDown" tabindex="0">
     <img
-      :style="{ left: `${imagePosition.x}px`, top: `${imagePosition.y}px`, width: `65px` }"
-      :src="selectedVehicleImage"
-      alt="Car"
-    />
+  :style="{ left: `${imagePosition.x}px`, top: `${imagePosition.y}px`, width: `${vehicleSize}px` }"
+  :src="selectedVehicleImage"
+  alt="Car"
+/>
+
     <img
       v-for="obstacle in visibleObstacles"
       :key="obstacle.id"
@@ -38,21 +39,20 @@
 </template>
 
 <script>
-import carSportImage from '@/assets/car_sport.png';
 import carMuscleImage from '@/assets/car_muscle.png';
+import carSportImage from '@/assets/car_sport.png';
 import carTruckImage from '@/assets/car_truck.png';
-import obstacleVanImage from '@/assets/obstacle_van.png';
-import obstacleTaxiImage from '@/assets/obstacle_taxi.png';
 import obstacleAmbulanceImage from '@/assets/obstacle_ambulance.png';
-import { ref, onMounted, onBeforeUnmount, createApp } from 'vue';
-import { eventBus, EVENTS } from './utils/eventBus.js'; // Import EVENTS from eventBus.js
+import obstacleTaxiImage from '@/assets/obstacle_taxi.png';
+import obstacleVanImage from '@/assets/obstacle_van.png';
+import { EVENTS, eventBus } from './utils/eventBus.js'; // Import EVENTS from eventBus.js
 
-import logo from '@/assets/logo.png';
-import pause from '@/assets/pause.svg';
-import hint_icon from '@/assets/hint.svg';
 import arrowLeft from '@/assets/arrow_left.svg';
 import arrowRight from '@/assets/arrow_right.svg';
 import gyroPhone from '@/assets/gyro_phone.svg';
+import hint_icon from '@/assets/hint.svg';
+import logo from '@/assets/logo.png';
+import pause from '@/assets/pause.svg';
 export default {
   data() {
     return {
@@ -83,6 +83,7 @@ export default {
       arrowLeft: arrowLeft,
       arrowRight: arrowRight,
       gyroPhone: gyroPhone,
+      vehicleSize: window.innerWidth <= 600 ? 40 : 65,
     };
   },
   methods: {
@@ -99,6 +100,9 @@ export default {
           this.moveImage(this.moveStep, 0, renderWindowWidth);
           break;
       }
+    },
+    updateVehicleSize() {
+      this.vehicleSize = window.innerWidth <= 600 ? 40 : 65;
     },
     moveImage(deltaX, deltaY, renderWindowWidth) {
       const newX = this.imagePosition.x + deltaX;
@@ -375,7 +379,7 @@ startGame(selectedLevel) {
   },
   mounted() {
     const isProduction = process.env.NODE_ENV === 'production';
-    const baseURL = isProduction ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' : '/';
+    const baseURL = isProduction ? 'https://webte1.fei.stuba.sk/~xtarcakova/uympzcnb' : '/';
     const jsonPath = `${baseURL}cars.json`;
 
     fetch(jsonPath)
@@ -429,6 +433,9 @@ startGame(selectedLevel) {
 
     if (this.displayModal) {
     }
+    this.updateVehicleSize(); // Call initially to set the initial size
+
+    window.addEventListener('resize', this.updateVehicleSize);
   },
   beforeDestroy() {
     eventBus.off('vehicle-selected', this.updateSelectedVehicle);
@@ -437,6 +444,7 @@ startGame(selectedLevel) {
     eventBus.off(EVENTS.SET_CURRENT_LEVEL, this.handleSetCurrentLevel);
 
     window.removeEventListener('deviceorientation', this.handleGyroscope);
+    window.removeEventListener('resize', this.updateVehicleSize);
   },
 };
 </script>

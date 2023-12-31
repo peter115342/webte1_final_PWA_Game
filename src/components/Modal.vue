@@ -157,7 +157,7 @@ export default {
 resetProgress() {
       localStorage.setItem('completedLevels', JSON.stringify([-1]));
       this.completedLevels = [-1];
-      window.location.reload();
+      window.location.reload(true);
 
     },
 
@@ -165,7 +165,7 @@ resetProgress() {
       this.$emit('close', this.selectedVehicle);
       console.log('Modal closed');
       eventBus.emit('closeModal');
-      eventBus.emit(EVENTS.START_GAME, this.selectedLevel); // Emit event to start the game with the selected level
+      eventBus.emit(EVENTS.START_GAME, this.selectedLevel);
       eventBus.emit('vehicle-selected', this.selectedVehicle);
       eventBus.emit(EVENTS.SET_CURRENT_LEVEL, this.selectedLevel);
     },
