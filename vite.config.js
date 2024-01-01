@@ -1,4 +1,3 @@
-// vite.config.js
 import { fileURLToPath, URL } from 'node:url';
 import { VitePWA } from 'vite-plugin-pwa';
 
@@ -13,6 +12,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest,
+      includeAssets: [
+        'favicon.ico',
+        'robots.txt',
+        'src/assets/**/*',
+      ],
     }),
   ],
   resolve: {

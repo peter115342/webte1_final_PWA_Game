@@ -1,11 +1,10 @@
 <template>
   <div class="render" ref="renderWindow" @keydown="handleKeyDown" tabindex="0">
     <img
-  :style="{ left: `${imagePosition.x}px`, top: `${imagePosition.y}px`, width: `${vehicleSize}px` }"
+    :style="{ left: `${imagePosition.x}px`, top: `${imagePosition.y}px`, width: `${vehicleSize}px` }"
   :src="selectedVehicleImage"
   alt="Car"
 />
-
     <img
       v-for="obstacle in visibleObstacles"
       :key="obstacle.id"
@@ -379,7 +378,7 @@ startGame(selectedLevel) {
   },
   mounted() {
     const isProduction = process.env.NODE_ENV === 'production';
-    const baseURL = isProduction ? 'https://webte1.fei.stuba.sk/~xtarcakova/uympzcnb' : '/';
+    const baseURL = isProduction ? 'https://webte1.fei.stuba.sk/~xmuzslay/anbzvavapva/' : '/';
     const jsonPath = `${baseURL}cars.json`;
 
     fetch(jsonPath)
@@ -433,7 +432,7 @@ startGame(selectedLevel) {
 
     if (this.displayModal) {
     }
-    this.updateVehicleSize(); // Call initially to set the initial size
+    this.updateVehicleSize();
 
     window.addEventListener('resize', this.updateVehicleSize);
   },
