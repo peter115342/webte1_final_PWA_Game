@@ -68,19 +68,22 @@
       </div>
       <button class="reset-progress-button" @click="resetProgress">Reset Progress</button>
 
+      <div>
+        <button class="random-level-button" @click="startRandomGame">Random Level</button>
+
+    </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
 import { eventBus, EVENTS } from './utils/eventBus.js';
 
-import sportsCarImage from '@/assets/car_sport.png';
-import muscleCarImage from '@/assets/car_muscle.png';
-import truckImage from '@/assets/car_truck.png';
 import arrowLeft from '@/assets/arrow_left.svg';
 import arrowRight from '@/assets/arrow_right.svg';
+import muscleCarImage from '@/assets/car_muscle.png';
+import sportsCarImage from '@/assets/car_sport.png';
+import truckImage from '@/assets/car_truck.png';
 import gyroPhone from '@/assets/gyro_phone.svg';
 import logo from '@/assets/logo.png';
 
@@ -137,8 +140,9 @@ export default {
           return '';
       }
     },
+
     isLevelCompleted(level) {
-  const storedCompletedLevels = localStorage.getItem('completedLevels');
+      const storedCompletedLevels = localStorage.getItem('completedLevels');
   if (storedCompletedLevels) {
     try {
       const completedLevels = JSON.parse(storedCompletedLevels);
@@ -154,11 +158,14 @@ export default {
     return false;
   }
 },
+startRandomGame() {
+    const randomLevel = Math.floor(Math.random() * this.levels.length) + 1;
+    this.startGame(randomLevel);
+  },
 resetProgress() {
       localStorage.setItem('completedLevels', JSON.stringify([-1]));
       this.completedLevels = [-1];
       window.location.reload(true);
-
     },
 
     closeModalAndNotify() {
@@ -380,5 +387,17 @@ resetProgress() {
     cursor: pointer;
     width: fit-content;
     font-size: 12px;
+  }
+  .random-level-button{
+    margin-top: 10px;
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: fit-content;
+    font-size: 12px;
+    height: 32px;
+    font-weight: bolder;
   }
 </style>

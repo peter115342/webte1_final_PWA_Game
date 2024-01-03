@@ -32,6 +32,8 @@
     
       <img :src="pause" alt="Speedy Escape"  @click="togglePause"  class="pause-button" />
     <img v-if="paused" class="pause-image" :src="pause" alt="Pause" />
+    <button v-if="paused" class="menu-button" @click="resetGameAndTogglePause">Menu</button>
+
 
     <div class="level-counter">Level: {{ currentLevel }} - {{ getCurrentLevelDifficulty() }}</div>
   </div>
@@ -138,6 +140,11 @@ export default {
       const renderWindowHeight = this.$refs.renderWindow.clientHeight;
       return obstacle.y > renderWindowHeight - 75;
     },
+    resetGameAndTogglePause() {
+    this.togglePause();
+    this.$emit('game-over');
+    this.resetGame(true);
+  },
 
     checkCollision(obstacle) {
       const carLeft = this.imagePosition.x;
@@ -193,7 +200,7 @@ export default {
 
     const images = [obstacleVanImage, obstacleTaxiImage, obstacleAmbulanceImage];
 
-    const obstacleWidth = window.innerWidth <= 600 ? 40 : 65; // Adjusted width based on window width
+    const obstacleWidth = window.innerWidth <= 600 ? 40 : 65;
 
     const newObstacle = {
       id: this.obstacles.length + 1,
@@ -206,15 +213,14 @@ export default {
     };
 
     const collision = this.visibleObstacles.some((obstacle) => {
-      const horizontalGap = 15; // Adjust the desired horizontal gap
-      const verticalGap = 15;
+      const horizontalGap = 25;
+      const verticalGap = 25;
 
       const horizontalOverlap = Math.abs(newObstacle.x - obstacle.x) < obstacleWidth + horizontalGap;
       const verticalOverlap = Math.abs(newObstacle.y - obstacle.y) < obstacleWidth + verticalGap;
 
       return horizontalOverlap && verticalOverlap;
     });
-
     if (!collision) {
       this.obstacles.push(newObstacle);
       this.visibleObstacles.push(newObstacle);
@@ -296,40 +302,55 @@ loadLevel(levelId) {
   } else {
     console.warn('Level not found:', levelId);
   }
-},  
+},
 startGame(selectedLevel) {
- 
-    this.currentLevel = selectedLevel;
-    this.displayModal = false;
-    this.startObstacleMovement();
-  },
-
-    startObstacleMovement() {
-      clearInterval(this.obstacleInterval);
-      this.obstacleInterval = setInterval(() => {
-        if (this.selectedVehicleLives > 0 && !this.paused) {
-          this.visibleObstacles.forEach((obstacle) => {
-            obstacle.y += obstacle.speed;
-            obstacle.zIndex = 0;
-            if (this.checkCollision(obstacle)) {
-              eventBus.emit('collision');
-            }
-          });
-
-          this.visibleObstacles = this.visibleObstacles.filter(
-            (obstacle) => !this.isObstacleOutsideRenderArea(obstacle)
-          );
-
-          if (this.visibleObstacles.length < this.maxObstacles) {
-            this.addObstacle();
-          }
-
-          if (this.passedObstaclesCount >= 20 ) {
-            this.nextLevel();
-          }
+  this.currentLevel = selectedLevel;
+  this.displayModal = false;
+  this.loadLevel(this.currentLevel);
+  this.startObstacleMovement();
+},
+startObstacleMovement() {
+  clearInterval(this.obstacleInterval);
+  this.obstacleInterval = setInterval(() => {
+    if (this.selectedVehicleLives > 0 && !this.paused) {
+      this.visibleObstacles.forEach((obstacle) => {
+        obstacle.y += obstacle.speed;
+        obstacle.zIndex = 0;
+        if (this.checkCollision(obstacle)) {
+          eventBus.emit('collision');
         }
-      }, 16);
-    },
+      });
+
+      this.visibleObstacles = this.visibleObstacles.filter(
+        (obstacle) => !this.isObstacleOutsideRenderArea(obstacle)
+      );
+
+      if (this.visibleObstacles.length < this.maxObstacles) {
+        this.addObstacle();
+      }
+
+      const currentLevel = this.levels.find((lvl) => lvl.id === this.currentLevel);
+      const difficulty = currentLevel ? currentLevel.difficulty : '';
+
+      let obstaclesToPass = 15;
+      switch (difficulty) {
+        case 'easy':
+          obstaclesToPass = 15;
+          break;
+        case 'medium':
+          obstaclesToPass = 30;
+          break;
+        case 'hard':
+          obstaclesToPass = 45;
+          break;
+      }
+
+      if (this.passedObstaclesCount >= obstaclesToPass) {
+        this.nextLevel();
+      }
+    }
+  }, 16);
+},
 
     
 
@@ -501,6 +522,23 @@ img {
   width: 200px;
   height: 200px;
 }
+.menu-button{
+  position: absolute;
+  top: 64%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 32px;
+  width: 80px;
+  font-size: 18px;
+  font-weight: bolder;
+  background-color: rgb(210, 26, 5);
+  border: none;
+  color: #f4f4f4;
+  border-radius: 7px;
+  cursor: pointer;
+
+}
+
 
 .hint-button {
   position: absolute;
