@@ -352,9 +352,7 @@ startObstacleMovement() {
   }, 16);
 },
 
-    
 
-  
     nextLevel() {
   const completedLevels = JSON.parse(localStorage.getItem('completedLevels')) || [];
   completedLevels.push(this.currentLevel);
@@ -430,7 +428,7 @@ startObstacleMovement() {
 
     this.imagePosition.x = (this.$refs.renderWindow.clientWidth - this.imageWidth) / 2;
     if (window.innerWidth <= 600) {
-      this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.25;
+      this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.21;
     } else {
       this.imagePosition.y = (this.$refs.renderWindow.clientHeight - this.imageWidth) / 1.2;
     }

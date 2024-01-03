@@ -10,7 +10,6 @@ if (import.meta.env.MODE === 'development') {
   const manifestPaths = Object.keys(importManifest);
 
   if (manifestPaths.length > 0) {
-    // Use the first manifest path found
     const firstManifestPath = manifestPaths[0];
     manifest = await importManifest[firstManifestPath]();
   } else {

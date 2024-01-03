@@ -252,6 +252,16 @@ resetProgress() {
     position: relative;
     z-index: 3;
   }
+  @media (max-width: 650px) {
+    .modal-overlay {
+      overflow-y: scroll; 
+    }
+
+    .modal {
+      padding-bottom: 60px;
+      padding-top: 200px;
+    }
+  }
 
   .tutorial-modal {
     background: #7e7c7c;
@@ -395,9 +405,9 @@ resetProgress() {
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    width: fit-content;
+    width: 158px;
     font-size: 12px;
-    height: 32px;
+    height: 36px;
     font-weight: bolder;
   }
 </style>

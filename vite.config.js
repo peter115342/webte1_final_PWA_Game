@@ -17,6 +17,7 @@ export default defineConfig({
         'robots.txt',
         'src/assets/**/*',
       ],
+      cleanupOutdatedCaches: true,
     }),
   ],
   resolve: {

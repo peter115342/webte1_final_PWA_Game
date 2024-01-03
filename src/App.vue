@@ -2,16 +2,28 @@
 import GameRender from './components/GameRender.vue';
 import Modal from './components/Modal.vue';
 import { ref } from 'vue';
+import '@/assets/main.css';
+
+
 </script>
 
 <template>
   <div class="main-container">
     <GameRender @level-finished="openModal" @game-over="openModal" />
     <Modal :visible="isModalVisible" @close="closeModal" />
+
   </div>
+  <footer>
+    &copy; JT115106 and peter115342
+  </footer>
 </template>
 
 <script>
+import backgroundMusic from '@/assets/background-music.wav';
+
+const audio = new Audio(backgroundMusic);
+audio.loop = true;
+
 export default {
   data() {
     return {
@@ -20,10 +32,22 @@ export default {
   },
   methods: {
     closeModal() {
+      this.playBackgroundMusic();
       this.isModalVisible = false;
     },
     openModal() {
+      this.pauseBackgroundMusic();
       this.isModalVisible = true;
+    },
+    playBackgroundMusic() {
+      if (audio.paused) {
+        audio.play();
+      } else {
+        audio.currentTime = 0;
+      }
+    },
+    pauseBackgroundMusic() {
+      audio.pause();
     },
   },
   mounted() {
@@ -37,6 +61,7 @@ body {
   margin-top: 0;
   text-align: center;
   overflow: hidden;
+  background-color: rgb(145, 145, 132);
 }
 
 .main-container {
@@ -49,11 +74,14 @@ body {
   overflow: hidden;
 }
 
-@media (max-width: 600px) {
-  .main-container {
-    height: 90vh;
-  }
+footer{
+  padding-top: 10px;
+  font-weight: bolder;
+  color: rgb(62, 61, 61);
+  text-align: center;
+  justify-self: center;
 }
+
 
 @media print {
   body {
