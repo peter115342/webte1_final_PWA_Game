@@ -380,7 +380,7 @@ startObstacleMovement() {
     },
 
     moveCarWithGyroscope(tiltLR) {
-      const sensitivity = 2.5;
+      const sensitivity = 1.5;
       const newX = this.imagePosition.x + tiltLR * sensitivity;
 
       const renderWindowWidth = this.$refs.renderWindow.clientWidth;
